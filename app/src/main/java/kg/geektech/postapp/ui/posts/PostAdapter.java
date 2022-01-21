@@ -14,12 +14,18 @@ import kg.geektech.postapp.databinding.ItemPostBinding;
 import kg.geektech.postapp.date.models.Post;
 
 public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder> {
-private ItemPostBinding binding;
+
     private List<Post> posts = new ArrayList<>();
-private onClick onClick;
+    private onClick onClick;
 
     public void setOnClick(PostAdapter.onClick onClick) {
         this.onClick = onClick;
+    }
+
+    public void remove(Post post) {
+        int index = posts.lastIndexOf(post);
+        posts.remove(post);
+        notifyItemRemoved(index);
     }
 
 
@@ -28,19 +34,10 @@ private onClick onClick;
         notifyDataSetChanged();
     }
 
-
-
-
-
     @NonNull
     @Override
     public PostViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        ItemPostBinding binding = ItemPostBinding.inflate(
-                LayoutInflater.from(parent.getContext()),
-                parent,
-                false
-        );
-        return new PostViewHolder(binding);
+        return new PostViewHolder(ItemPostBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false));
     }
 
     @Override
@@ -67,13 +64,25 @@ private onClick onClick;
             binding.tvUserId.setText(String.valueOf(post.getUserId()));
             binding.tvTitle.setText(post.getTittle());
             binding.tvContent.setText(post.getContent());
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    onClick.onItemClick(post);
+                }
+            });
+            itemView.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View view) {
+                    onClick.onItemClick(post);
+                    return true;
+                }
+            });
         }
     }
 
-   interface onClick {
-        void onItemClick(int position);
-        void onLongClick(int position);
+    interface onClick {
+        void onItemClick(Post post);
 
-
-   }
+        void onLongClick(Post post);
+    }
 }

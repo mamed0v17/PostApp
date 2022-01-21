@@ -1,21 +1,15 @@
 package kg.geektech.postapp.ui.posts;
 
-import static android.provider.Contacts.SettingsColumns.KEY;
-
-import android.annotation.SuppressLint;
-import android.app.AlertDialog;
 import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
-
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.LinearLayout;
 
 import java.util.List;
 
@@ -31,8 +25,8 @@ import retrofit2.Response;
 public class PostFragment extends Fragment {
 
     private FragmentPostBinding binding;
-private PostAdapter adapter;
-private NavController controller;
+    private PostAdapter adapter;
+    private NavController controller;
 
     public PostFragment() {
         // Required empty public constructor
@@ -44,17 +38,35 @@ private NavController controller;
         adapter = new PostAdapter();
         adapter.setOnClick(new PostAdapter.onClick() {
             @Override
-            public void onItemClick(int position) {
+            public void onItemClick(Post post) {
                 Bundle bundle = new Bundle();
-                 Post post = adapter.getItemCount(position);
-                 bundle.putSerializable("key", post);
+                bundle.putSerializable("key", post);
+                controller.navigate(R.id.action_postFragment_to_formFragment, bundle);
             }
 
             @Override
-            public void onLongClick(int position) {
+            public void onLongClick(Post post) {
+                App.api.deletePost(post.getId()).enqueue(new Callback<Post>() {
+                    @Override
+                    public void onResponse(Call<Post> call, Response<Post> response) {
+                        adapter.remove(post);
+                    }
 
+                    @Override
+                    public void onFailure(Call<Post> call, Throwable t) {
+
+                    }
+                });
             }
         });
+    }
+
+    @Nullable
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        binding = FragmentPostBinding.inflate(inflater);
+        controller = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment);
+        return binding.getRoot();
     }
 
     @Override
@@ -62,16 +74,12 @@ private NavController controller;
         super.onViewCreated(view, savedInstanceState);
         binding.recycler.setAdapter(adapter);
 
-        binding.fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                controller.navigate(R.id.action_postFragment_to_formFragment);
-            }
-        });
+        binding.fab.setOnClickListener(view1 -> controller.navigate(R.id.action_postFragment_to_formFragment));
+
         App.api.getPost().enqueue(new Callback<List<Post>>() {
             @Override
             public void onResponse(Call<List<Post>> call, Response<List<Post>> response) {
-                if (response.isSuccessful() && response.body() != null){
+                if (response.isSuccessful() && response.body() != null) {
                     adapter.setPosts(response.body());
                 }
             }
