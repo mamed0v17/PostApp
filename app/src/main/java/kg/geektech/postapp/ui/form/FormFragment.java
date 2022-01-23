@@ -47,6 +47,8 @@ public class FormFragment extends Fragment {
             String content = binding.etContent.getText()
                     .toString();
             if (getArguments() != null) {
+               post.setTittle(tittle);
+               post.setContent(content);
                App.api.updateList(post.getId(), post).enqueue(new Callback<Post>() {
                   @Override
                   public void onResponse(Call<Post> call, Response<Post> response) {
@@ -86,6 +88,7 @@ public class FormFragment extends Fragment {
          post = (Post) getArguments().getSerializable("key");
          binding.etTitle.setText(post.getTittle());
          binding.etContent.setText(post.getContent());
+
       }
    }
 }
